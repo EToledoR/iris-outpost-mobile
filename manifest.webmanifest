@@ -1,0 +1,12 @@
+{
+  "name": "Iris Outpost — Lo-Fi Radio",
+  "short_name": "Iris Outpost",
+  "description": "A quiet Iris outpost for music, reading and work.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#06080b",
+  "theme_color": "#0b1016",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

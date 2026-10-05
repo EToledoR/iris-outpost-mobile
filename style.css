@@ -1,0 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #d8d2c5;
+  --muted: #8e8a82;
+  --panel: rgba(17, 23, 30, .9);
+  --line: rgba(194, 176, 137, .25);
+  --accent: #b9a77f;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 50% 20%, #202a34 0, #0b1016 48%, #06080b 100%);
+  color: var(--ink);
+  font-family: Montserrat, sans-serif;
+  display: grid;
+  place-items: center;
+}
+
+.station {
+  width: min(680px, 94vw);
+  padding: 24px 0 20px;
+}
+
+.station-header {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.eyebrow, .track-label {
+  font-size: 9px;
+  letter-spacing: .20em;
+  color: var(--muted);
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  margin: 0;
+  flex: 1;
+}
+
+.status {
+  font-size: 9px;
+  letter-spacing: .13em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.status span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8c987e;
+  margin-right: 6px;
+  box-shadow: 0 0 8px #8c987e;
+}
+
+.scene {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #111820;
+  box-shadow: 0 22px 80px rgba(0,0,0,.48);
+}
+
+.iris-frames {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+ .iris-frame {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  filter: saturate(.90) contrast(.97);
+}
+
+/*
+ * Three frames, one 24-second cycle.
+ * Each frame stays visible for ~7 seconds.
+ * The 1-second overlaps are cross-fades, so there is
+ * always at least one fully/mostly visible image.
+ */
+
+.frame-1 {
+  animation: iris-frame-1 24s infinite;
+}
+
+.frame-2 {
+  animation: iris-frame-2 24s infinite;
+}
+
+.frame-3 {
+  animation: iris-frame-3 24s infinite;
+}
+
+@keyframes iris-frame-1 {
+  0%,
+  29.17% {
+    opacity: 1;
+  }
+
+  33.33%,
+  95.83% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes iris-frame-2 {
+  0%,
+  29.17% {
+    opacity: 0;
+  }
+
+  33.33%,
+  62.50% {
+    opacity: 1;
+  }
+
+  66.67%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes iris-frame-3 {
+  0%,
+  62.50% {
+    opacity: 0;
+  }
+
+  66.67%,
+  95.83% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.018), transparent 24%, rgba(0,0,0,.08));
+}
+
+.player {
+  margin-top: 10px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.track { min-width: 0; flex: 1; }
+
+.track-title {
+  margin-top: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+button {
+  width: 32px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button:hover, button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+button.play { width: 40px; font-size: 13px; }
+button:disabled { opacity: .3; cursor: default; }
+
+.volume {
+  margin-left: 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+input[type=range] { width: 80px; accent-color: var(--accent); }
+
+footer {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 11px;
+  font-size: 8px;
+  letter-spacing: .14em;
+  color: #686760;
+  text-transform: uppercase;
+}
+
+@media (max-width: 600px) {
+  .station { width: 96vw; }
+  .station-header { display: block; }
+  .status { margin-top: 7px; }
+  .player { display: block; }
+  .controls { margin-top: 12px; justify-content: center; }
+}
+
+.track-count { margin-top: 3px; font-size: 9px; color: var(--muted); }
+.music-import { display: flex; gap: 7px; margin-top: 10px; flex-basis: 100%; justify-content: flex-end; }
+.import-button { display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 9px; letter-spacing: .08em; cursor: pointer; }
+.import-button:hover { border-color: var(--accent); color: var(--accent); }
+.import-button input { display: none; }
+.message { margin: 8px 2px 0; font-size: 9px; color: #77766f; text-align: center; }
+@media (max-width: 600px) {
+  body { min-height: 100svh; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  .station { width: min(96vw, 520px); padding: 12px 0 16px; }
+  .station-header { display: flex; align-items: flex-start; gap: 8px; }
+  h1 { font-size: 16px; }
+  .eyebrow { font-size: 8px; }
+  .status { margin-top: 2px; font-size: 8px; }
+  .player { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; }
+  .track { flex-basis: 100%; }
+  .controls { width: 100%; justify-content: center; }
+  .music-import { width: 100%; justify-content: stretch; }
+  .import-button { flex: 1; justify-content: center; min-height: 40px; }
+  button { width: 40px; height: 40px; }
+  button.play { width: 46px; }
+  input[type=range] { width: 90px; }
+  footer { font-size: 7px; }
+}
