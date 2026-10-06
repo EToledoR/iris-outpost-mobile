@@ -27,4 +27,3 @@ Then open http://localhost:8000/ .
 - No Python, Node, Ollama or backend is required by the app itself.
 - The service worker needs HTTPS (or localhost) to work.
 - Browser support for selecting an entire folder varies; selecting multiple MP3 files is the reliable fallback.
-- 
