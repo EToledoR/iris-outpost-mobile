@@ -60,12 +60,21 @@
     const bars = 32;
     const gap = 3;
     const barWidth = (width - gap * (bars - 1)) / bars;
+    const segments = 6;
+    const segmentHeight = 5;
+    const segmentGap = 2;
     for (let i = 0; i < bars; i++) {
-      const bin = Math.min(spectrumData.length - 1, Math.floor(i * spectrumData.length / bars));
-      const magnitude = spectrumData[bin] / 255;
-      const barHeight = Math.max(2, magnitude * (height - 4));
-      spectrumCtx.fillStyle = "rgba(185, 167, 127, " + (0.38 + magnitude * 0.62) + ")";
-      spectrumCtx.fillRect(i * (barWidth + gap), (height - barHeight) / 2, barWidth, barHeight);
+      const firstBin = Math.floor(i * spectrumData.length / bars);
+      const lastBin = Math.max(firstBin + 1, Math.floor((i + 1) * spectrumData.length / bars));
+      let peak = 0;
+      for (let bin = firstBin; bin < lastBin; bin++) peak = Math.max(peak, spectrumData[bin]);
+      const magnitude = peak / 255;
+      const litSegments = Math.min(segments, Math.max(1, Math.round(magnitude * segments * 1.25)));
+      spectrumCtx.fillStyle = "rgba(143, 163, 125, " + (0.48 + magnitude * 0.52) + ")";
+      for (let segment = 0; segment < litSegments; segment++) {
+        const y = height - segmentHeight - segment * (segmentHeight + segmentGap) - 2;
+        spectrumCtx.fillRect(i * (barWidth + gap), y, barWidth, segmentHeight);
+      }
     }
     spectrumFrame = requestAnimationFrame(drawSpectrum);
   }
