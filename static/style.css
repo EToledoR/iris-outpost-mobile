@@ -263,3 +263,21 @@ footer {
   input[type=range] { width: 90px; }
   footer { font-size: 7px; }
 }
+
+
+/* Minimal live audio spectrum — compact enough for older mobile devices. */
+.spectrum-panel {
+  margin-top: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: rgba(17, 23, 30, .68);
+}
+#audio-spectrum {
+  display: block;
+  width: 100%;
+  height: 32px;
+}
+@media (prefers-reduced-motion: reduce) {
+  #audio-spectrum { visibility: visible; }
+}
