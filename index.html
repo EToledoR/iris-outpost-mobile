@@ -47,13 +47,9 @@
       <label class="volume" title="Volume">🔊 <input id="player-volume" type="range" min="0" max="1" step="0.01" value="0.55" aria-label="Volume"></label>
     </div>
     <div class="music-import">
-      <label class="import-button">
-        <input id="music-files" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" multiple>
-        + ADD MP3s
-      </label>
-      <label class="import-button secondary">
-        <input id="music-folder" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" multiple webkitdirectory directory>
-        + ADD FOLDER
+    <label id="drop-zone" class="import-button">
+      <input id="music-files" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" multiple>
+      + ADD MUSIC (FILES / FOLDER)
       </label>
     </div>
   </section>
