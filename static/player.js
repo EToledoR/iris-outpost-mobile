@@ -153,9 +153,16 @@
         fileQueue.push(file);
       } else if (entry.isDirectory) {
         const dirReader = entry.createReader();
-        const entries = await new Promise((resolve) => {
-          dirReader.readEntries(resolve);
-        });
+        // Chromium's FileSystem API may return directory entries in batches.
+        // Keep reading until an empty batch signals that the directory is exhausted.
+        let entries = [];
+        while (true) {
+          const batch = await new Promise((resolve) => {
+            dirReader.readEntries(resolve);
+          });
+          if (!batch.length) break;
+          entries = entries.concat(batch);
+        }
         for (const childEntry of entries) {
           await traverseDirectory(childEntry);
         }
