@@ -14,7 +14,7 @@
   const loopBtn = document.getElementById("player-loop");
   const volumeEl = document.getElementById("player-volume");
   const filesEl = document.getElementById("music-files");
-  const folderEl = document.getElementById("music-folder");
+  const dropZone = document.getElementById("drop-zone");
   const spectrumCanvas = document.getElementById("audio-spectrum");
   const spectrumCtx = spectrumCanvas ? spectrumCanvas.getContext("2d") : null;
 
@@ -111,7 +111,7 @@
     objectUrl = null;
   };
 
-  const displayName = file => file.name.replace(/\.[^.]+$/, "");
+  const displayName = file => file.name.replace(/\.[^.]+\$/, "");
 
   function loadTrack(index) {
     if (!playlist.length) return;
@@ -129,7 +129,7 @@
   }
 
   function acceptFiles(fileList) {
-    const files = [...fileList].filter(f => f.type.startsWith("audio/") || /\.(mp3|m4a|ogg|wav|flac)$/i.test(f.name));
+    const files = [...fileList].filter(f => f.type.startsWith("audio/") || /\.(mp3|m4a|ogg|wav|flac)\$/i.test(f.name));
     if (!files.length) {
       messageEl.textContent = "No audio files found.";
       return;
@@ -140,12 +140,75 @@
     loadTrack(0);
     setControls(true);
     messageEl.textContent = `${playlist.length} track${playlist.length === 1 ? "" : "s"} loaded locally. Nothing was uploaded.`;
-    filesEl.value = "";
-    folderEl.value = "";
+    if (filesEl) filesEl.value = "";
   }
 
-  filesEl.addEventListener("change", e => acceptFiles(e.target.files));
-  folderEl.addEventListener("change", e => acceptFiles(e.target.files));
+  // --- LÓGICA DE PROCESAMIENTO RECURSIVO PARA CARPETAS (DRAG & DROP) ---
+  async function processDataTransfer(items) {
+    const fileQueue = [];
+    
+    async function traverseDirectory(entry) {
+      if (entry.isFile) {
+        const file = await new Promise((resolve) => entry.file(resolve));
+        fileQueue.push(file);
+      } else if (entry.isDirectory) {
+        const dirReader = entry.createReader();
+        const entries = await new Promise((resolve) => {
+          dirReader.readEntries(resolve);
+        });
+        for (const childEntry of entries) {
+          await traverseDirectory(childEntry);
+        }
+      }
+    }
+
+    const promises = [];
+    for (const item of items) {
+      const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+      if (entry) {
+        promises.push(traverseDirectory(entry));
+      } else {
+        const file = item.getAsFile();
+        if (file) fileQueue.push(file);
+      }
+    }
+
+    await Promise.all(promises);
+    acceptFiles(fileQueue);
+  }
+
+  // --- ASIGNACIÓN DE EVENTOS ---
+
+  // Evento nativo del input: ideal para navegadores viejos como el del Kindle Fire
+  if (filesEl) {
+    filesEl.addEventListener("change", e => acceptFiles(e.target.files));
+  }
+
+  // Eventos de arrastrar y soltar (Drag and Drop) para navegadores de escritorio/modernos
+  if (dropZone) {
+    ["dragover", "dragenter"].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add("highlight");
+      }, false);
+    });
+
+    ["dragleave", "drop"].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("highlight");
+      }, false);
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+      const dt = e.dataTransfer;
+      if (dt && dt.items) {
+        processDataTransfer(dt.items);
+      } else if (dt && dt.files) {
+        acceptFiles(dt.files);
+      }
+    }, false);
+  }
 
   playBtn.addEventListener("click", () => {
     if (!playlist.length) return;
