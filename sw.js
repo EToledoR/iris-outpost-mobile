@@ -1,4 +1,4 @@
-const CACHE = "iris-outpost-mobile-v2";
+const CACHE = "iris-outpost-mobile-v3-spectrum";
 const ASSETS = [
   "./",
   "./index.html",
