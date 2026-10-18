@@ -15,6 +15,78 @@
   const volumeEl = document.getElementById("player-volume");
   const filesEl = document.getElementById("music-files");
   const folderEl = document.getElementById("music-folder");
+  const spectrumCanvas = document.getElementById("audio-spectrum");
+  const spectrumCtx = spectrumCanvas ? spectrumCanvas.getContext("2d") : null;
+
+  // Keep the visualiser deliberately small for older mobile browsers.
+  let audioContext = null;
+  let analyser = null;
+  let sourceNode = null;
+  let spectrumFrame = 0;
+  let spectrumData = null;
+  let spectrumReady = false;
+
+  function setupSpectrum() {
+    if (!spectrumCtx || spectrumReady) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      audioContext = new AudioContextClass();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 128; // 64 bins; inexpensive on older devices.
+      analyser.smoothingTimeConstant = 0.78;
+      spectrumData = new Uint8Array(analyser.frequencyBinCount);
+      sourceNode = audioContext.createMediaElementSource(audioEl);
+      sourceNode.connect(analyser);
+      analyser.connect(audioContext.destination);
+      spectrumReady = true;
+    } catch (error) {
+      // Audio playback must continue even if Web Audio is unavailable.
+      if (audioContext) audioContext.close().catch(() => {});
+      audioContext = analyser = sourceNode = spectrumData = null;
+      spectrumReady = false;
+    }
+  }
+
+  function drawSpectrum() {
+    if (!spectrumCtx || !spectrumCanvas || !analyser || audioEl.paused) {
+      stopSpectrum();
+      return;
+    }
+    analyser.getByteFrequencyData(spectrumData);
+    const width = spectrumCanvas.width;
+    const height = spectrumCanvas.height;
+    spectrumCtx.clearRect(0, 0, width, height);
+    const bars = 32;
+    const gap = 3;
+    const barWidth = (width - gap * (bars - 1)) / bars;
+    for (let i = 0; i < bars; i++) {
+      const bin = Math.min(spectrumData.length - 1, Math.floor(i * spectrumData.length / bars));
+      const magnitude = spectrumData[bin] / 255;
+      const barHeight = Math.max(2, magnitude * (height - 4));
+      spectrumCtx.fillStyle = "rgba(185, 167, 127, " + (0.38 + magnitude * 0.62) + ")";
+      spectrumCtx.fillRect(i * (barWidth + gap), (height - barHeight) / 2, barWidth, barHeight);
+    }
+    spectrumFrame = requestAnimationFrame(drawSpectrum);
+  }
+
+  function stopSpectrum() {
+    if (spectrumFrame) cancelAnimationFrame(spectrumFrame);
+    spectrumFrame = 0;
+    if (spectrumCtx && spectrumCanvas) {
+      spectrumCtx.clearRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+    }
+  }
+
+  function startSpectrum() {
+    if (!spectrumCtx || spectrumFrame) return;
+    setupSpectrum();
+    if (!analyser) return;
+    if (audioContext && audioContext.state === "suspended") {
+      audioContext.resume().catch(() => {});
+    }
+    spectrumFrame = requestAnimationFrame(drawSpectrum);
+  }
 
   let playlist = [];
   let currentIndex = 0;
@@ -74,8 +146,15 @@
   prevBtn.addEventListener("click", () => { loadTrack(currentIndex - 1); audioEl.play().catch(() => {}); });
   nextBtn.addEventListener("click", () => { loadTrack(currentIndex + 1); audioEl.play().catch(() => {}); });
 
-  audioEl.addEventListener("play", updatePlayButton);
-  audioEl.addEventListener("pause", updatePlayButton);
+  audioEl.addEventListener("play", () => {
+    updatePlayButton();
+    startSpectrum();
+  });
+  audioEl.addEventListener("pause", () => {
+    updatePlayButton();
+    stopSpectrum();
+  });
+  audioEl.addEventListener("ended", stopSpectrum);
   audioEl.addEventListener("ended", () => {
     if (currentIndex === playlist.length - 1 && !loopPlaylist) return;
     loadTrack(currentIndex + 1);
