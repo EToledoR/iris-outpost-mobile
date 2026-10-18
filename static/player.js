@@ -111,7 +111,7 @@
     objectUrl = null;
   };
 
-  const displayName = file => file.name.replace(/\.[^.]+\$/, "");
+  const displayName = file => file.name.replace(/\.[^.]+$/, "");
 
   function loadTrack(index) {
     if (!playlist.length) return;
@@ -129,7 +129,7 @@
   }
 
   function acceptFiles(fileList) {
-    const files = [...fileList].filter(f => f.type.startsWith("audio/") || /\.(mp3|m4a|ogg|wav|flac)\$/i.test(f.name));
+    const files = [...fileList].filter(f => f.type.startsWith("audio/") || /\.(mp3|m4a|ogg|wav|flac)$/i.test(f.name));
     if (!files.length) {
       messageEl.textContent = "No audio files found.";
       return;
